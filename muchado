@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#
+# CONFIG
+#
+
+SUDOERS='/etc/sudoers.d/muchado'
+
+#
+# USE JOURNALCTL TO GET SUDO COMMANDS
+#
+
+SUDOCMDS=$(journalctl \
+  _COMM=sudo \
+  --since '20 seconds ago' \
+  -o json-pretty \
+  | jq -r ._CMDLINE | sort | uniq)
+
+#
+# WRITE TO SUDOERS CONFIG
+#
+
+if [ -n "$SUDOCMDS" ]; then
+  while read -r LINE; do
+    if [ -n "$LINE" ]; then
+      CMD=$(cut -d " " -f 2 <<< $LINE)
+      grep '=' <<< "$CMD" && continue 
+      WHICH=$(which "$CMD" 2>/dev/null) \
+        || continue
+      PARAMS=$(cut -d " " -f 3- <<< $LINE | \
+        sed -r 's|([,:=\\])|\\\1|g')
+      grep "$SUDOERS" <<< "$PARAMS" && continue 
+      NEW="$USER ALL=(ALL) NOPASSWD: $WHICH $PARAMS"
+      sudo grep -q "$NEW" "$SUDOERS" || {
+      	echo $NEW | sudo EDITOR='tee -a' \
+          visudo -f $SUDOERS || echo ":: $NEW"
+      }
+    fi
+  done <<< "$SUDOCMDS"
+fi
+
+#
+# EDIT SUDOERS CONFIG TO VERIFY
+#
+
+sudo visudo -f $SUDOERS
+
+#
+# END
+# Dmytri Kleiner <dk@trick.ca>
+#
+

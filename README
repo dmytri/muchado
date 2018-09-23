@@ -1,0 +1,15 @@
+# MUCHADO
+
+WRITEN FOR PERSONAL USE, NOT WIDELY TESTED
+
+SHARED FOR EDUCATIONAL PURPOSES ONLY
+
+Safely adds all sudo commands used in the last 20
+seconds to /etc/sudoers.d/muchado
+
+# CONFIG
+
+Configure in source code.
+
+Dmytri Kleiner <dk@trick.ca>
+
