@@ -13,3 +13,11 @@ Configure in source code.
 
 Dmytri Kleiner <dk@trick.ca>
 
+
+# DEPENDENCIES
+
+systemd
+sudo
+jq
+sed
+
