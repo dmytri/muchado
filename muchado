@@ -23,16 +23,16 @@ SUDOCMDS=$(journalctl \
 if [ -n "$SUDOCMDS" ]; then
   while read -r LINE; do
     if [ -n "$LINE" ]; then
-      CMD=$(cut -d " " -f 2 <<< $LINE)
+      CMD=$(cut -d " " -f 2 <<< "$LINE")
       grep '=' <<< "$CMD" && continue 
-      WHICH=$(which "$CMD" 2>/dev/null) \
+      WHICH=$(command -v "$CMD" 2>/dev/null) \
         || continue
-      PARAMS=$(cut -d " " -f 3- <<< $LINE | \
+      PARAMS=$(cut -d " " -f 3- <<< "$LINE" | \
         sed -r 's|([,:=\\])|\\\1|g')
       grep "$SUDOERS" <<< "$PARAMS" && continue 
       NEW="$USER ALL=(ALL) NOPASSWD: $WHICH $PARAMS"
       sudo grep -q "$NEW" "$SUDOERS" || {
-      	echo $NEW | sudo EDITOR='tee -a' \
+      	echo "$NEW" | sudo EDITOR='tee -a' \
           visudo -f $SUDOERS || echo ":: $NEW"
       }
     fi
